@@ -11,8 +11,8 @@
 #include <log4cpp/Priority.hh>
 
 #include <HyperDistributorDemo.h>
-#include <HyperDistributor.h>
-#include <LogPriority.h>
+#include <HyperDistributor/HyperDistributor.h>
+#include <utils/LogPriority.h>
 
 
 /**

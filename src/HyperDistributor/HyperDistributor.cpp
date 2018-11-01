@@ -2,7 +2,7 @@
 // Created by eric on 18-10-30.
 //
 
-#include "HyperDistributor.h"
+#include "HyperDistributor/HyperDistributor.h"
 #include <iostream>
 
 void test()

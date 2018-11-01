@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include <LogPriority.h>
+#include <utils/LogPriority.h>
 
 class HyperDistributorDemo
 {
