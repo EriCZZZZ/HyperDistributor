@@ -23,6 +23,7 @@
  */
 int main(int argc, char *argv[]) {
     auto *demo = new HyperDistributorDemo();
+    demo->display();
     delete(demo);
 
     return 0;
@@ -44,13 +45,28 @@ HyperDistributorDemo::HyperDistributorDemo() {
 #else
     this->log(LogPriority(INFO), "TASK MODIFY POLICY : USE LOCK");
 #endif
-
 }
 
 HyperDistributorDemo::~HyperDistributorDemo() {
     log4cpp::Category::shutdown();
 }
 
+void HyperDistributorDemo::display() {
+    auto *hyperDistributor = new hd::HyperDistributor("HD1");
+    hyperDistributor->push(nullptr);
+    hyperDistributor->modify(nullptr, nullptr);
+    hyperDistributor->get();
+    delete(hyperDistributor);
+}
+
+
+/**
+ * private function
+ */
+
+/**
+ * 初始化日志
+ */
 void HyperDistributorDemo::initLog() {
 #ifdef LOG_LIB_LOG4CPP
     // 构造日志layout
@@ -59,19 +75,24 @@ void HyperDistributorDemo::initLog() {
     log4cpp::OstreamAppender *appender = new log4cpp::OstreamAppender("HyperDistributor", &std::cout);
     appender->setLayout(layout);
 
-    log4cpp::Category::getRoot().addAppender(appender);
+    log4cpp::Category::getInstance(LOG_APPENDER_NAME).addAppender(appender);
 
 #ifdef DEMO_DEBUG
-    log4cpp::Category::getRoot().setPriority(log4cpp::Priority::DEBUG);
+    log4cpp::Category::getInstance(LOG_APPENDER_NAME).setPriority(log4cpp::Priority::DEBUG);
 #else
-    log4cpp::Category::getRoot().setPriority(log4cpp::Priority::WARN);
+    log4cpp::Category::getInstance(LOG_APPENDER_NAME).setPriority(log4cpp::Priority::WARN);
 #endif
 #endif
 }
 
+/**
+ * 打印日志
+ * @param priority
+ * @param s
+ */
 void HyperDistributorDemo::log(LogPriority priority, std::string s) {
 #ifdef LOG_LIB_LOG4CPP
-    log4cpp::Category::getInstance("main").log(priority, s);
+    log4cpp::Category::getInstance(LOG_APPENDER_NAME).log(priority, s);
 #else
     std::cout << priority << " " << s << std::endl;
 #endif

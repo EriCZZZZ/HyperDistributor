@@ -20,6 +20,9 @@ INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR})
 # source code
 AUX_SOURCE_DIRECTORY(src DIR_SRCS)
 
+# hyper distributor
+add_subdirectory(src/HyperDistributor)
+
 # lib
 if (LOG_LIB_LOG4CPP)
     FIND_LIBRARY(LOG4CPP_LIB_PATH log4cpp /usr/lib /usr/local/lib NO_DEFAULT_PATH)
@@ -29,3 +32,6 @@ endif (LOG_LIB_LOG4CPP)
 LINK_LIBRARIES()
 
 ADD_EXECUTABLE(hyper-distributor-demo ${DIR_SRCS})
+
+# link hyper distributor
+target_link_libraries(hyper-distributor-demo HyperDistributor)

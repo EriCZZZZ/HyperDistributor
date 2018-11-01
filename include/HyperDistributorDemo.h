@@ -5,6 +5,8 @@
 #ifndef HYPER_DISTRIBUTOR_DEMO_HYPERDISTRIBUTORDEMO_H
 #define HYPER_DISTRIBUTOR_DEMO_HYPERDISTRIBUTORDEMO_H
 
+#define LOG_APPENDER_NAME "DEMO"
+
 #include <string>
 
 #include <utils/LogPriority.h>
@@ -15,8 +17,10 @@ public:
     HyperDistributorDemo();
     ~HyperDistributorDemo();
 
-    void log(LogPriority priority, std::string s);
+    void display();
+
 private:
+    void log(LogPriority priority, std::string s);
     void initLog();
 
 
