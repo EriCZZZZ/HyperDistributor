@@ -11,7 +11,8 @@ set(CMAKE_CXX_STANDARD 11)
 configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_BINARY_DIR}/config.h")
 
 OPTION(DEMO_DEBUG "Debug mode" ON)
-OPTION(TASK_LOCK_FREE "Use lock free policy" ON)
+OPTION(DISTRIBUTOR_LOCK_FREE "Distributor multithread policy" OFF)
+OPTION(TASK_LOCK_FREE "Task multithread policy" ON)
 OPTION(LOG_LIB_LOG4CPP "Use log4cpp as log freamwork" ON)
 
 # dependencies

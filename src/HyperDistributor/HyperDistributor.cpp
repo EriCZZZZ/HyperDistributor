@@ -10,36 +10,40 @@
 #include <log4cpp/Category.hh>
 
 
-#include <HyperDistributor/HyperDistributor.h>
+#include "HyperDistributor/HyperDistributor.h"
+#include "HyperDistributor/Deque.h"
+#include "HyperDistributor/Node.h"
 
+#ifdef DISTRIBUTOR_LOCK_FREE
+#else /* DISTRIBUTOR_LOCK_FREE */
+#include "HyperDistributor/ThreadSafeUseLockDeque.h"
+#endif /* DISTRIBUTOR_LOCK_FREE */
 
-hd::HyperDistributor::HyperDistributor() {
+using namespace hd;
+
+HyperDistributor::HyperDistributor() {
     init("DefaultHyperDistributor");
 }
 
-hd::HyperDistributor::HyperDistributor(std::string instanceName) {
+HyperDistributor::HyperDistributor(std::string instanceName) {
     init(std::move(instanceName));
 }
 
-hd::HyperDistributor::~HyperDistributor() {
-
+HyperDistributor::~HyperDistributor() {
+    delete deque;
 }
 
-void hd::HyperDistributor::push(Task *task) {
-    log(LogPriority(INFO), "push task");
+/**
+ * task function
+ */
 
+Node* HyperDistributor::get() {
+    return deque->dequeue();
 }
 
-void hd::HyperDistributor::modify(Task *task, void *newData) {
-    log(LogPriority(INFO), "modify task");
-
+void HyperDistributor::append(Node *node) {
+    deque->append(node);
 }
-
-Task *hd::HyperDistributor::get() {
-    log(LogPriority(INFO), "get task");
-    return nullptr;
-}
-
 /**
  * private function
  */
@@ -48,9 +52,16 @@ Task *hd::HyperDistributor::get() {
  * 初始化
  * @param instanceName
  */
-void hd::HyperDistributor::init(std::string instanceName) {
+void HyperDistributor::init(std::string instanceName) {
     this->instanceName = std::move(instanceName);
     initLog();
+
+    // init Deque
+#ifdef DISTRIBUTOR_LOCK_FREE
+#else /* DISTRIBUTOR_LOCK_FREE */
+    this->deque = new ThreadSafeUseLockDeque();
+#endif /* DISTRIBUTOR_LOCK_FREE */
+    this->log(LogPriority(INFO), "Successfully init deque");
 
     this->log(LogPriority(INFO), "HyperDistributor init finish");
 }
@@ -58,7 +69,7 @@ void hd::HyperDistributor::init(std::string instanceName) {
 /**
  * 初始化日志相关
  */
-void hd::HyperDistributor::initLog() {
+void HyperDistributor::initLog() {
 #ifdef LOG_LIB_LOG4CPP
     // 构造日志layout
     auto *layout = new log4cpp::PatternLayout();
@@ -71,7 +82,7 @@ void hd::HyperDistributor::initLog() {
 #ifdef DEMO_DEBUG
     log4cpp::Category::getInstance(this->instanceName).setPriority(log4cpp::Priority::DEBUG);
 #else
-    log4cpp::Category::getInstance(this->instanceName).setPriority(log4cpp::Priority::WARN);
+    log4cpp::Category::getInstance(this->instanceName).setPriority(log4cpp::Priority::INFO);
 #endif
 #endif
 }
@@ -81,7 +92,7 @@ void hd::HyperDistributor::initLog() {
  * @param priority
  * @param s
  */
-void hd::HyperDistributor::log(LogPriority priority, std::string s) {
+void HyperDistributor::log(LogPriority priority, std::string s) {
 #ifdef LOG_LIB_LOG4CPP
     log4cpp::Category::getInstance(this->instanceName).log(priority, s);
 #else

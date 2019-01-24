@@ -2,13 +2,12 @@
 // Created by eric on 18-10-30.
 //
 
-#ifndef HYPER_DISTRIBUTOR_HYPERDISTRIBUTOR_H
-#define HYPER_DISTRIBUTOR_HYPERDISTRIBUTOR_H
-
-#include "Task.h"
+#ifndef HYPER_DISTRIBUTOR_H
+#define HYPER_DISTRIBUTOR_H
 
 #include <utils/LogPriority.h>
 #include <string>
+#include "HyperDistributor/Deque.h"
 
 namespace hd {
 
@@ -20,14 +19,15 @@ namespace hd {
         explicit HyperDistributor(std::string instanceName);
         ~HyperDistributor();
 
-        void push(Task* task);
-        void modify(Task* task, void* newData);
-        Task* get();
+        Node* get();
+        void append(Node* node);
 
     private:
         void init(std::string instanceName);
         void initLog();
         void log(LogPriority priority, std::string s);
+
+        Deque* deque;
 
         std::string instanceName;
     };
@@ -36,4 +36,4 @@ namespace hd {
 
 
 
-#endif //HYPER_DISTRIBUTOR_HYPERDISTRIBUTOR_H
+#endif /* HYPER_DISTRIBUTOR_H */

@@ -1,4 +1,5 @@
 #cmakedefine DEMO_DEBUG
+#cmakedefine DISTRIBUTOR_LOCK_FREE
 #cmakedefine TASK_LOCK_FREE
 #cmakedefine LOG_LIB_LOG4CPP
 
