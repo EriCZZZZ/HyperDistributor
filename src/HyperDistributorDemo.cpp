@@ -69,12 +69,12 @@ void HyperDistributorDemo::display() {
         auto *hyperDistributor = new hd::HyperDistributor("HD1");
         printf("display: this=%p\n", this);
         std::thread t_producer(&HyperDistributorDemo::producerWithCount, this, hyperDistributor, 10000);
-        t_producer.join();
-        log(LogPriority(INFO), hyperDistributor->status());
+//        log(LogPriority(INFO), hyperDistributor->status());
         std::thread t_consumer1(&HyperDistributorDemo::consumer, this, hyperDistributor, "c1");
         std::thread t_consumer2(&HyperDistributorDemo::consumer, this, hyperDistributor, "c2");
         std::thread t_consumer3(&HyperDistributorDemo::consumer, this, hyperDistributor, "c3");
         std::thread t_consumer4(&HyperDistributorDemo::consumer, this, hyperDistributor, "c4");
+        t_producer.join();
         t_consumer1.join();
         t_consumer2.join();
         t_consumer3.join();
@@ -152,9 +152,8 @@ void HyperDistributorDemo::producerWithCount(HyperDistributor *hd, int cnt) {
 
 void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
     std::ostringstream  idStream;
-//    idStream << std::this_thread::get_id();
     idStream << id;
-    printf("consumer %s start stream_pointer=%p\n", idStream.str().c_str(), &idStream);
+    printf("consumer %s start\n", idStream.str().c_str());
     for(int i = 0; i < 2500; ) {
         Node* n = hd->get();
         if(n != nullptr) {

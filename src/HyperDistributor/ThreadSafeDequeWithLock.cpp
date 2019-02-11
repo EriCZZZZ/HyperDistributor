@@ -27,24 +27,20 @@ ThreadSafeUseLockDeque::~ThreadSafeUseLockDeque() {
 
 Node* ThreadSafeUseLockDeque::dequeue() {
     mutex.lock();
+    Node* r = nullptr;
+    if (head != nullptr) {
+        r = this->head;
+        this->head = this->head->getNextNode();
 
-    if (head == nullptr) {
-        return nullptr;
+        if (this->head == nullptr) {
+            this->tail = nullptr;
+        } else {
+            this->head->setPreNode(nullptr);
+        }
+
+        r->setPreNode(nullptr);
+        r->setNextNode(nullptr);
     }
-
-    Node* r = head;
-
-    this->head = this->head->getNextNode();
-
-    if (this->head == nullptr) {
-        this->tail = nullptr;
-    } else {
-        this->head->setPreNode(nullptr);
-    }
-
-    r->setPreNode(nullptr);
-    r->setNextNode(nullptr);
-
     mutex.unlock();
     return r;
 }
