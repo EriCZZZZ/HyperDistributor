@@ -44,6 +44,19 @@ Node* HyperDistributor::get() {
 void HyperDistributor::append(Node *node) {
     deque->append(node);
 }
+
+/**
+ * monitor function
+ */
+
+std::string HyperDistributor::status() {
+    std::ostringstream buf;
+    buf << "Distributor status" << std::endl;
+    buf << "====deque content====" << std::endl << deque->allNodeToString() << "====end====" << std::endl;
+    buf << "Distributor status end" << std::endl;
+    return buf.str();
+}
+
 /**
  * private function
  */

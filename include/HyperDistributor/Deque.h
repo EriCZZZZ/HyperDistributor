@@ -13,6 +13,7 @@ namespace hd {
         virtual ~Deque() = default;
         virtual void append(Node * node) = 0;
         virtual Node* dequeue() = 0;
+        virtual std::string allNodeToString() = 0;
     };
 }
 

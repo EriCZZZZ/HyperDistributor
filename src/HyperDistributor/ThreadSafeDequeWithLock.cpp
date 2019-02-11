@@ -2,9 +2,11 @@
 // Created by eric on 19-1-24.
 //
 
-#include "HyperDistributor/ThreadSafeUseLockDeque.h"
-
 #include <mutex>
+
+#include <HyperDistributor/ThreadSafeUseLockDeque.h>
+#include <sstream>
+
 
 using namespace hd;
 
@@ -24,11 +26,11 @@ ThreadSafeUseLockDeque::~ThreadSafeUseLockDeque() {
 }
 
 Node* ThreadSafeUseLockDeque::dequeue() {
+    mutex.lock();
+
     if (head == nullptr) {
         return nullptr;
     }
-
-    mutex.lock();
 
     Node* r = head;
 
@@ -64,5 +66,17 @@ void ThreadSafeUseLockDeque::append(hd::Node *node) {
     }
 
     mutex.unlock();
+}
+
+std::string ThreadSafeUseLockDeque::allNodeToString() {
+    std::ostringstream buf;
+    mutex.lock();
+    Node* current = this->head;
+    while(current != nullptr) {
+        buf << "Node addr=" << current << " val_addr=" << current->getValP() << std::endl;
+        current = current->getNextNode();
+    }
+    mutex.unlock();
+    return buf.str();
 }
 

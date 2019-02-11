@@ -17,6 +17,8 @@ namespace hd {
 
         Node* dequeue() override;
         void append(Node* node) override;
+
+        std::string allNodeToString() override;
     private:
         Node* head;
         Node* tail;

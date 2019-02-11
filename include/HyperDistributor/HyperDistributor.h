@@ -22,6 +22,7 @@ namespace hd {
         Node* get();
         void append(Node* node);
 
+        std::string status();
     private:
         void init(std::string instanceName);
         void initLog();

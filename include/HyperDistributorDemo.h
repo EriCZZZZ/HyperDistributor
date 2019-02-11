@@ -35,6 +35,6 @@ private:
     void initLog();
 
     void producerWithCount(HyperDistributor* hd, int cnt);
-    void consumer(HyperDistributor* hd);
+    void consumer(HyperDistributor* hd, std::string);
 };
 #endif //HYPER_DISTRIBUTOR_DEMO_HYPERDISTRIBUTORDEMO_H
