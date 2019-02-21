@@ -5,6 +5,8 @@
 #ifndef NOT_IMPLEMENTED_EXCEPTION_H
 #define NOT_IMPLEMENTED_EXCEPTION_H
 
+#include <exception>
+
 class NotImplementedException : public std::exception {
 
 public:

@@ -5,14 +5,21 @@
 #ifndef HYPER_DISTRIBUTOR_NODE_H
 #define HYPER_DISTRIBUTOR_NODE_H
 
+#include "utils/SAE.h"
+
+#ifndef TASK_LOCK_FREE
+#include <mutex>
+#endif
+
 namespace hd {
     class Node {
     public:
         Node();
-        explicit Node(void* p_val);
+        explicit Node(void* p_val, SAE_BITS statusAndEvents);
         ~Node();
 
-        /* Node options */
+        /* Node operations */
+        /* !!! only Deque can use this !!! */
         void setNextNode(Node* next);
         Node* getNextNode();
         void setPreNode(Node* pre);
@@ -20,14 +27,33 @@ namespace hd {
 
         /* value */
         void* getValP();
-        void setValP(void* p_val);
+        void* setValP(void *p_val);
+
+        /* Node status and events */
+        SAE_BITS getStatusAndEvents();
+        bool casStatusAndEvents(SAE_BITS newSAE, SAE_BITS oldSAE);
     private:
+        /* Deque Node */
         Node* next;
         Node* pre;
+
+        /* Distributor node status */
+        SAE_BITS sae;
+
+        /* user val */
         void* p_val;
+
+        /* functions */
+        /* value */
+        // 并发安全版本
+        void* ms_getValP();
+        void* ms_setValP(void* p_val);
+
+#ifndef TASK_LOCK_FREE
+        std::mutex mutex;
+#endif
     };
 }
 
-
-
 #endif /* HYPER_DISTRIBUTOR_NODE_H */
+

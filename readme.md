@@ -74,4 +74,6 @@ a Hyper Distributor for gp
 
 #### 时序
 
+## 缩略词对照表
 
+1. SAE: status and events (bits)

@@ -68,17 +68,10 @@ void HyperDistributorDemo::display() {
         log(LogPriority(INFO), "display start");
         auto *hyperDistributor = new hd::HyperDistributor("HD1");
         printf("display: this=%p\n", this);
-        std::thread t_producer(&HyperDistributorDemo::producerWithCount, this, hyperDistributor, 10000);
-//        log(LogPriority(INFO), hyperDistributor->status());
+        std::thread t_producer(&HyperDistributorDemo::producerWithCount, this, hyperDistributor, 1);
         std::thread t_consumer1(&HyperDistributorDemo::consumer, this, hyperDistributor, "c1");
-        std::thread t_consumer2(&HyperDistributorDemo::consumer, this, hyperDistributor, "c2");
-        std::thread t_consumer3(&HyperDistributorDemo::consumer, this, hyperDistributor, "c3");
-        std::thread t_consumer4(&HyperDistributorDemo::consumer, this, hyperDistributor, "c4");
         t_producer.join();
         t_consumer1.join();
-        t_consumer2.join();
-        t_consumer3.join();
-        t_consumer4.join();
         log(LogPriority(INFO), hyperDistributor->status());
         delete(hyperDistributor);
 
@@ -141,23 +134,28 @@ void HyperDistributorDemo::log(LogPriority priority, std::string s) {
  */
 
 void HyperDistributorDemo::producerWithCount(HyperDistributor *hd, int cnt) {
-    printf("hdd=%p, hd=%p, cnt=%d\n", this, hd, cnt);
     for(int i = 0; i < cnt; i++) {
         char* buf = new char[128];
         sprintf(buf, "Node no: %d / %d", i, cnt - 1);
-        hd->append(new Node((void*) buf));
+        hd->append(new Node((void*) buf, NODE_SAE_INIT));
         printf("buf : %d s=%s addr=%p\n", i, buf, buf);
     }
 }
 
 void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
-    std::ostringstream  idStream;
+    std::ostringstream idStream;
     idStream << id;
     printf("consumer %s start\n", idStream.str().c_str());
-    for(int i = 0; i < 2500; ) {
+    for(int i = 0; i < 1; ) {
         Node* n = hd->get();
         if(n != nullptr) {
             printf("Consumer id=%s n=%p val=%s\n", idStream.str().c_str(), n, (char*) n->getValP());
+            printf("status:%x events:%x set_status:%x set_events:%x\n",
+                    NODE_STATUS(n->getStatusAndEvents()),
+                    NODE_EVENTS(n->getStatusAndEvents()),
+                    NODE_SET_STATUS(n->getStatusAndEvents(), NODE_STATUS_IN_QUEUE),
+                    NODE_SET_STATUS(NODE_ADD_EVENT(n->getStatusAndEvents(), NODE_EVENTS_READABLE), NODE_STATUS_IN_QUEUE)
+                    );
             delete((char*)n->getValP());
             i++;
             for(int j = 0; j < 1000; j++) {
