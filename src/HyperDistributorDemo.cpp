@@ -102,15 +102,19 @@ void HyperDistributorDemo::display() {
         // start consumers to consume events
         std::thread t_consumer1(&HyperDistributorDemo::consumer, this, hd, "c1");
         std::thread t_consumer2(&HyperDistributorDemo::consumer, this, hd, "c2");
+        std::thread t_consumer3(&HyperDistributorDemo::consumer, this, hd, "c3");
+        std::thread t_consumer4(&HyperDistributorDemo::consumer, this, hd, "c4");
+        std::thread t_consumer5(&HyperDistributorDemo::consumer, this, hd, "c5");
 
         t_producer.join();
         this->isProducerRunning = false;
 
         t_consumer1.join();
         t_consumer2.join();
+        t_consumer3.join();
+        t_consumer4.join();
+        t_consumer5.join();
         log(LogPriority(INFO), hd->status());
-
-        this->checkEventsCntMap();
 
         log(LogPriority(INFO), "Display finish");
 
@@ -201,25 +205,27 @@ void HyperDistributorDemo::producer(HyperDistributor *hd) {
     this->log(LogPriority(INFO), "Producer start");
 //    while(this->isProducerRunning) {
     int fd = FD_START;
-    while(fd <= FD_END) {
-        // random a fd to add new events
-        Node* n = hd->getNodeByFd(fd);
-        SAE_BITS oldSAE, newSAE;
-        SAE_STATUS status;
-        // random a event to create
-        do {
-            oldSAE = n->getStatusAndEvents();
-            SAE_EVENT newEvent = this->randomEvent();
-            status = NODE_STATUS(oldSAE);
-            newSAE = NODE_ADD_EVENT(oldSAE, newEvent);
-        } while(!n->casStatusAndEvents(newSAE, oldSAE));
-        // if WAIT_EVENT do schedule
-        if (NODE_STATUS_WAIT_EVENT == status) {
-            hd->schedule(n);
-        }
+    for(int i = 0; i < 2; i++) {
+        while(fd <= FD_END) {
+            // random a fd to add new events
+            Node* n = hd->getNodeByFd(fd);
+            SAE_BITS oldSAE, newSAE;
+            SAE_STATUS status;
+            // random a event to create
+            do {
+                oldSAE = n->getStatusAndEvents();
+                SAE_EVENT newEvent = this->randomEvent();
+                status = NODE_STATUS(oldSAE);
+                newSAE = NODE_ADD_EVENT(oldSAE, newEvent);
+            } while(!n->casStatusAndEvents(newSAE, oldSAE));
+            // if WAIT_EVENT do schedule
+            if (NODE_STATUS_WAIT_EVENT == status) {
+                hd->schedule(n);
+            }
 
-        std::this_thread::yield();
-        fd++;
+            std::this_thread::yield();
+            fd++;
+        }
     }
     this->log(LogPriority(INFO), "Producer exit");
 }
@@ -245,8 +251,6 @@ void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
             if(h != nullptr) {
                 h(events, node->getFd(), node->getValP());
             }
-            // 记录事件，检测是否丢失
-            this->setFdEventFlag(fd);
         }
         node = hd->get();
     }
@@ -313,10 +317,4 @@ void HyperDistributorDemo::checkEventsCntMap() {
     }
     oss << cnt << " fds has no event happen. They are: " << oss_falseFds.str();
     log(LogPriority(INFO), oss.str());
-}
-
-void HyperDistributorDemo::setFdEventFlag(int fd) {
-    this->mtx_ecm.lock();
-    this->eventsCntMap[fd] = true;
-    this->mtx_ecm.unlock();
 }

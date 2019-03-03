@@ -8,6 +8,7 @@
 #include <log4cpp/PatternLayout.hh>
 #include <log4cpp/OstreamAppender.hh>
 #include <log4cpp/Category.hh>
+#include <algorithm>
 
 #include "HyperDistributor/HyperDistributor.h"
 #include "HyperDistributor/Deque.h"
@@ -75,9 +76,16 @@ Node* HyperDistributor::getNodeByFd(int fd) {
 
 std::string HyperDistributor::status() {
     std::ostringstream buf;
-    buf << "Distributor status" << std::endl;
-    buf << "====deque content====" << std::endl << deque->allNodeToString() << "====end====" << std::endl;
-    buf << "Distributor status end";
+    int *cnt = 0;
+    std::ostringstream fdsStillHasEvents;
+    std::for_each(map.begin(), map.end(), [&](std::map<int, Node*>::reference pair) {
+        SAE_BITS sae = pair.second->getStatusAndEvents();
+        if (NODE_EVENTS(sae) != NODE_EVENTS_NULL) {
+            fdsStillHasEvents << ((*cnt) == 0 ? "" : ",") << pair.first;
+            (*cnt)++;
+        }
+    });
+    buf << "There is " << cnt << " fd has events. They are : " << fdsStillHasEvents.str();
     return buf.str();
 }
 

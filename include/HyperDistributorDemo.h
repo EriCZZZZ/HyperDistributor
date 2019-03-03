@@ -51,7 +51,6 @@ private:
     unsigned int randomFd();
     SAE_EVENT randomEvent();
     void checkEventsCntMap();
-    void setFdEventFlag(int fd);
 
     std::map<int, Handler> handlers;
     std::default_random_engine randomEngine;

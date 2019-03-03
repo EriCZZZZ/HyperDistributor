@@ -37,8 +37,6 @@ namespace hd {
 
         Deque* deque;
 
-        // todo avl-tree to store all node
-        // todo to find node when producer want to modify task
         std::map<int, Node*> map;
 
         std::mutex mtx_createNode;
