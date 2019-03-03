@@ -5,8 +5,11 @@
 #ifndef HYPER_DISTRIBUTOR_H
 #define HYPER_DISTRIBUTOR_H
 
-#include <utils/LogPriority.h>
 #include <string>
+#include <map>
+#include <mutex>
+
+#include <utils/LogPriority.h>
 #include "HyperDistributor/Deque.h"
 
 namespace hd {
@@ -20,7 +23,11 @@ namespace hd {
         ~HyperDistributor();
 
         Node* get();
+        // todo move to private
         void append(Node* node);
+
+        void schedule(Node* node);
+        Node* getNodeByFd(int fd);
 
         std::string status();
     private:
@@ -30,11 +37,15 @@ namespace hd {
 
         Deque* deque;
 
+        // todo avl-tree to store all node
+        // todo to find node when producer want to modify task
+        std::map<int, Node*> map;
+
+        std::mutex mtx_createNode;
+
         std::string instanceName;
     };
 
 }
-
-
 
 #endif /* HYPER_DISTRIBUTOR_H */

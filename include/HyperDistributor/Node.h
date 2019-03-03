@@ -15,7 +15,7 @@ namespace hd {
     class Node {
     public:
         Node();
-        explicit Node(void* p_val, SAE_BITS statusAndEvents);
+        explicit Node(int fd, void* p_val, SAE_BITS sae);
         ~Node();
 
         /* Node operations */
@@ -28,6 +28,7 @@ namespace hd {
         /* value */
         void* getValP();
         void* setValP(void *p_val);
+        int getFd();
 
         /* Node status and events */
         SAE_BITS getStatusAndEvents();
@@ -38,6 +39,7 @@ namespace hd {
         Node* pre;
 
         /* Distributor node status */
+        int fd;
         SAE_BITS sae;
 
         /* user val */

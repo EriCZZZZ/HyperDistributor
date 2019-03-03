@@ -9,10 +9,11 @@
 #include <log4cpp/OstreamAppender.hh>
 #include <log4cpp/Category.hh>
 
-
 #include "HyperDistributor/HyperDistributor.h"
 #include "HyperDistributor/Deque.h"
 #include "HyperDistributor/Node.h"
+
+#include "utils/exceptions/NotImplementedException.h"
 
 #ifdef DISTRIBUTOR_LOCK_FREE
 #else /* DISTRIBUTOR_LOCK_FREE */
@@ -43,6 +44,29 @@ Node* HyperDistributor::get() {
 
 void HyperDistributor::append(Node *node) {
     deque->append(node);
+}
+
+void HyperDistributor::schedule(Node* node) {
+    if(node != nullptr) {
+        SAE_BITS sae = node->getStatusAndEvents();
+        while(!node->casStatusAndEvents(NODE_SET_STATUS(sae, NODE_STATUS_IN_QUEUE), sae)) {
+            sae = node->getStatusAndEvents();
+        }
+        this->append(node);
+    }
+}
+
+Node* HyperDistributor::getNodeByFd(int fd) {
+    Node* r = this->map[fd];
+    if(r == nullptr) {
+        mtx_createNode.lock();
+        if((r = this->map[fd]) == nullptr) {
+            r = new Node(fd, nullptr, NODE_SAE_INIT);
+            this->map[fd] = r;
+        }
+        mtx_createNode.unlock();
+    }
+    return r;
 }
 
 /**

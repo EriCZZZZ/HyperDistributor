@@ -13,9 +13,10 @@ Node::Node() {
     p_val = nullptr;
 };
 
-Node::Node(void* p_val, SAE_BITS statusAndEvents) {
+Node::Node(int fd, void* p_val, SAE_BITS sae) {
+    this->fd = fd;
     this->p_val = p_val;
-    this->sae = statusAndEvents;
+    this->sae = sae;
 }
 
 Node::~Node() = default;
@@ -43,9 +44,16 @@ void* Node::getValP() {
 void* Node::setValP(void *p_val) {
     return this->ms_setValP(p_val);
 }
+int Node::getFd() {
+    return this->fd;
+}
 
 SAE_BITS Node::getStatusAndEvents() {
+#ifndef TASK_LOCK_FREE
     return this->sae;
+#else
+    return this->sae;
+#endif
 }
 
 bool Node::casStatusAndEvents(SAE_BITS newSAE, SAE_BITS oldSAE) {
