@@ -41,8 +41,8 @@ typedef __int16_t SAE_EVENT;
     (sae & (!event)) /* todo : re-check */
 #define NODE_CLEAR_ALL_EVENTS(sae) \
     (sae & NODE_STATUS_MASK)
-#define NODE_CHECK_EVENT(sae, event) \
-    ((NODE_EVENTS(sae) & event) > 0)
+#define NODE_CHECK_EVENT(events, event) \
+    ((events & event) > 0)
 
 #define NODE_SET_STATUS(sae, status) \
     (((sae << 16) >> 16) | (status << 16))

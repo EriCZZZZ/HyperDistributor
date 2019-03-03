@@ -62,7 +62,7 @@ HyperDistributorDemo::HyperDistributorDemo() {
 
     std::cout << "FD CNT:" << FD_CNT << " START:" << FD_START << " END:" << FD_END << std::endl;
 
-    this->isContinue = true;
+    this->isProducerRunning = true;
 }
 
 HyperDistributorDemo::~HyperDistributorDemo() {
@@ -78,9 +78,21 @@ void HyperDistributorDemo::display() {
 
         auto *hd = new hd::HyperDistributor("HD1");
 
+        std::map<int, bool> masks;
+
         // register handlers
         Handler handler = [](SAE_EVENTS events, int fd, void* p_val) {
-            std::cout << "hello handler" << std::endl;
+            bool isReadable = false;
+            bool isWritable = false;
+
+            if (NODE_CHECK_EVENT(events, NODE_EVENTS_READABLE)) {
+                isReadable = true;
+            }
+            if (NODE_CHECK_EVENT(events, NODE_EVENTS_WRITABLE)) {
+                isWritable = true;
+            }
+
+            printf("HANDLER fd:%d events:%#06x readable[%d] writable[%d]\n", fd, events, isReadable, isWritable);
         };
         this->registerFds(hd, handler, nullptr);
 
@@ -89,10 +101,16 @@ void HyperDistributorDemo::display() {
 
         // start consumers to consume events
         std::thread t_consumer1(&HyperDistributorDemo::consumer, this, hd, "c1");
+        std::thread t_consumer2(&HyperDistributorDemo::consumer, this, hd, "c2");
 
         t_producer.join();
+        this->isProducerRunning = false;
+
         t_consumer1.join();
+        t_consumer2.join();
         log(LogPriority(INFO), hd->status());
+
+        this->checkEventsCntMap();
 
         log(LogPriority(INFO), "Display finish");
 
@@ -181,11 +199,11 @@ void HyperDistributorDemo::registerFds(HyperDistributor *hd, Handler defaultHand
 void HyperDistributorDemo::producer(HyperDistributor *hd) {
     // do producer
     this->log(LogPriority(INFO), "Producer start");
-//    while(this->isContinue) {
-    int i = 0;
-    while(i++ < 128) {
+//    while(this->isProducerRunning) {
+    int fd = FD_START;
+    while(fd <= FD_END) {
         // random a fd to add new events
-        Node* n = hd->getNodeByFd(this->randomFd());
+        Node* n = hd->getNodeByFd(fd);
         SAE_BITS oldSAE, newSAE;
         SAE_STATUS status;
         // random a event to create
@@ -199,6 +217,9 @@ void HyperDistributorDemo::producer(HyperDistributor *hd) {
         if (NODE_STATUS_WAIT_EVENT == status) {
             hd->schedule(n);
         }
+
+        std::this_thread::yield();
+        fd++;
     }
     this->log(LogPriority(INFO), "Producer exit");
 }
@@ -208,10 +229,10 @@ void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
     startInfo << "consumer " << id << " start" << std::endl;
     log(LogPriority(INFO), startInfo.str());
 
+    Node* node = hd->get();
     // main loop exit when program exit
-    while(this->isContinue) {
+    while(this->isProducerRunning || node != nullptr) {
         // fd loop exit when fd has NO event to deal
-        Node* node = hd->get();
         while(node != nullptr && !node->casStatusAndEvents(NODE_SAE_WAIT_EVENT, NODE_SAE_AFTER_DEAL)) {
             SAE_BITS sae = node->getStatusAndEvents();
             while(!node->casStatusAndEvents(NODE_CLEAR_ALL_EVENTS(NODE_SET_STATUS(sae, NODE_STATUS_CONSUMER)), sae)) {
@@ -224,17 +245,10 @@ void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
             if(h != nullptr) {
                 h(events, node->getFd(), node->getValP());
             }
-
-//            if(NODE_CHECK_EVENT(sae, NODE_EVENTS_READABLE)) {
-//                log(LogPriority(INFO), "fd is readable");
-//            }
-//            if(NODE_CHECK_EVENT(sae, NODE_EVENTS_WRITABLE)) {
-//                log(LogPriority(INFO), "fd is writable");
-//            }
-//            if(NODE_CHECK_EVENT(sae, NODE_EVENTS_SOME_EVENT)) {
-//                log(LogPriority(INFO), "fd has have some_event");
-//            }
+            // 记录事件，检测是否丢失
+            this->setFdEventFlag(fd);
         }
+        node = hd->get();
     }
 
     std::ostringstream exitInfo;
@@ -280,4 +294,29 @@ unsigned int HyperDistributorDemo::randomFd() {
  */
 SAE_EVENT HyperDistributorDemo::randomEvent() {
     return ACTIVE_EVENTS_SET[this->eventsIdxRandomUniform(this->randomEngine)];
+}
+
+void HyperDistributorDemo::checkEventsCntMap() {
+    int fd = FD_START;
+    std::ostringstream oss, oss_falseFds;
+    int cnt = 0;
+    while(fd <= FD_END) {
+        if(this->eventsCntMap[fd] == false) {
+            if(cnt == 0) {
+                oss_falseFds << fd;
+            } else {
+                oss_falseFds << "," << fd;
+            }
+            cnt++;
+        }
+        fd++;
+    }
+    oss << cnt << " fds has no event happen. They are: " << oss_falseFds.str();
+    log(LogPriority(INFO), oss.str());
+}
+
+void HyperDistributorDemo::setFdEventFlag(int fd) {
+    this->mtx_ecm.lock();
+    this->eventsCntMap[fd] = true;
+    this->mtx_ecm.unlock();
 }

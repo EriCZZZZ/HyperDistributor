@@ -50,12 +50,16 @@ private:
     bool ctlHandler(int fd, Handler handler, HD_CTL_TYPE ctl);
     unsigned int randomFd();
     SAE_EVENT randomEvent();
+    void checkEventsCntMap();
+    void setFdEventFlag(int fd);
 
     std::map<int, Handler> handlers;
     std::default_random_engine randomEngine;
     std::uniform_int_distribution<unsigned> fdsIdxRandomUniform = std::uniform_int_distribution<unsigned>(FD_START, FD_END);
     std::uniform_int_distribution<unsigned> eventsIdxRandomUniform = std::uniform_int_distribution<unsigned>(0, static_cast<unsigned int>(ACTIVE_EVENTS_SET_LEN));
 
-    bool isContinue;
+    bool isProducerRunning;
+    std::map<int, bool> eventsCntMap;
+    std::mutex mtx_ecm;
 };
 #endif //HYPER_DISTRIBUTOR_DEMO_HYPERDISTRIBUTORDEMO_H
