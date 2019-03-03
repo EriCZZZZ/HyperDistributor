@@ -2,6 +2,7 @@
 // Created by eric on 19-1-8.
 //
 
+#include "config.h"
 #include <utils/exceptions/NotImplementedException.h>
 #include "HyperDistributor/Node.h"
 

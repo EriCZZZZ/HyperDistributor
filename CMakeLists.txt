@@ -16,7 +16,7 @@ OPTION(TASK_LOCK_FREE "Task multithread policy" ON)
 OPTION(LOG_LIB_LOG4CPP "Use log4cpp as log freamwork" ON)
 
 # dependencies
-INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR})
 
 # source code
 AUX_SOURCE_DIRECTORY(src DIR_SRCS)
