@@ -6,6 +6,8 @@
 #include <utils/exceptions/NotImplementedException.h>
 #include "HyperDistributor/Node.h"
 
+#include <thread>
+
 using namespace hd;
 
 Node::Node() {
@@ -68,8 +70,19 @@ bool Node::casStatusAndEvents(SAE_BITS newSAE, SAE_BITS oldSAE) {
     this->mutex.unlock();
     return modifyResult;
 #else
-    NotImplementedException nie;
-    throw nie;
+#ifndef TASK_LF_WRONG_GEN
+    return __sync_bool_compare_and_swap(&this->sae, oldSAE, newSAE);
+#else
+    if(this->sae != oldSAE) {
+        return false;
+    } else {
+        for(int i = 0; i < 1; i++) {
+            std::this_thread::yield();
+        }
+        this->sae = newSAE;
+        return true;
+    }
+#endif
 #endif
 }
 
@@ -80,8 +93,7 @@ void* Node::ms_getValP() {
     this->mutex.unlock();
     return tmp;
 #else
-    NotImplementedException nie;
-    throw nie;
+    return this->p_val;
 #endif
 }
 

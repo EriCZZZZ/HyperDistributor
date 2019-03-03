@@ -1,6 +1,7 @@
 #cmakedefine DEMO_DEBUG
 #cmakedefine DISTRIBUTOR_LOCK_FREE
 #cmakedefine TASK_LOCK_FREE
+#cmakedefine TASK_LF_WRONG_GEN
 #cmakedefine LOG_LIB_LOG4CPP
 
 #define DEMO_VERSION "@DEMO_VERSION_MAJOR@.@DEMO_VERSION_MINOR@.@DEMO_VERSION_PATCH@"
@@ -8,7 +9,7 @@
 /**
  * demo args
  */
-#define FD_CNT 1000000
+#define FD_CNT 128
 #define FD_START 1
 #define FD_END (FD_START + FD_CNT - 1)
 
@@ -21,3 +22,6 @@ static int ACTIVE_EVENTS_SET_LEN = sizeof(ACTIVE_EVENTS_SET) / sizeof(SAE_EVENTS
 #endif /* ACTIVE_EVENTS_SET_FLAG */
 
 #define DEMO_RANDOM_SEED 1220
+
+#define CONSUMER_CNT 16
+#define PRODUCER_GEN_EVENTS_CNT (FD_CNT * 32)

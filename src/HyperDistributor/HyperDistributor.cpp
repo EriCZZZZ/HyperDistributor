@@ -76,16 +76,17 @@ Node* HyperDistributor::getNodeByFd(int fd) {
 
 std::string HyperDistributor::status() {
     std::ostringstream buf;
-    int *cnt = 0;
+    int cnt = 0, total = 0;
     std::ostringstream fdsStillHasEvents;
     std::for_each(map.begin(), map.end(), [&](std::map<int, Node*>::reference pair) {
+        total += 1;
         SAE_BITS sae = pair.second->getStatusAndEvents();
         if (NODE_EVENTS(sae) != NODE_EVENTS_NULL) {
-            fdsStillHasEvents << ((*cnt) == 0 ? "" : ",") << pair.first;
-            (*cnt)++;
+            fdsStillHasEvents << (cnt == 0 ? "" : ",") << pair.first << "(" << NODE_STATUS(sae) << ")";
+            cnt++;
         }
     });
-    buf << "There is " << cnt << " fd has events. They are : " << fdsStillHasEvents.str();
+    buf << "There is " << cnt << "/" << total << " fd has events. They are : " << fdsStillHasEvents.str();
     return buf.str();
 }
 

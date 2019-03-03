@@ -13,6 +13,7 @@ configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_BINARY_DIR}/config
 OPTION(DEMO_DEBUG "Debug mode" ON)
 OPTION(DISTRIBUTOR_LOCK_FREE "Distributor multithread policy" OFF)
 OPTION(TASK_LOCK_FREE "Task multithread policy" ON)
+OPTION(TASK_LF_WRONG_GEN "使用非线程安全的无锁代码" OFF)
 OPTION(LOG_LIB_LOG4CPP "Use log4cpp as log freamwork" ON)
 
 # dependencies
