@@ -92,7 +92,7 @@ void HyperDistributorDemo::display() {
                 isWritable = true;
             }
 
-            printf("HANDLER fd:%d events:%#06x readable[%d] writable[%d]\n", fd, events, isReadable, isWritable);
+//            printf("HANDLER fd:%d events:%#06x readable[%d] writable[%d]\n", fd, events, isReadable, isWritable);
         };
         this->registerFds(hd, handler, nullptr);
 
@@ -129,7 +129,6 @@ void HyperDistributorDemo::display() {
  * do benchmark
  */
 void HyperDistributorDemo::benchmark() {
-    // todo benchmark
 }
 
 
@@ -227,7 +226,7 @@ void HyperDistributorDemo::producer(HyperDistributor *hd) {
 
 void HyperDistributorDemo::consumer(HyperDistributor *hd, std::string id) {
     std::ostringstream startInfo;
-    startInfo << "consumer " << id << " start" << std::endl;
+    startInfo << "consumer " << id << " start";
     log(LogPriority(INFO), startInfo.str());
 
     Node* node = hd->get();
